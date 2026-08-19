@@ -30,7 +30,11 @@ impl BookmarkStatus {
     /// Java: `name().toLowerCase()`. Here: one `match self { ... }` arm per
     /// variant returning a `&'static str` (`"pending" | "ready" | "failed"`).
     pub fn as_str(&self) -> &'static str {
-        todo!("step 1: map each BookmarkStatus variant to its lowercase &'static str")
+        match self {
+            BookmarkStatus::Pending => {"pending"}
+            BookmarkStatus::Ready => {"ready"}
+            BookmarkStatus::Failed => {"failed"}
+        }
     }
 }
 
@@ -62,6 +66,16 @@ impl Bookmark {
     /// b.setStatus(PENDING); b.setRead(false);
     /// ```
     pub fn new(id: String, url: String, tags: Vec<String>, created_at: i64) -> Self {
-        todo!("step 1: construct a Pending Bookmark; title/excerpt/error = None, read = false")
+        Self {
+            id,
+            url,
+            title: None,
+            excerpt: None,
+            status: BookmarkStatus::Pending,
+            error: None,
+            read: false,
+            tags,
+            created_at
+        }
     }
 }
