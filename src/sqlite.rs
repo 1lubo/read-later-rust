@@ -4,7 +4,7 @@
 //! Step 4: full-text search (`?q=`) via the `bookmarks_fts` FTS5 table, kept in
 //! sync from Rust on insert / mark_ready / delete.
 //!
-//! SQL rule (as in Fragments): build queries with the RUNTIME api
+//! SQL rule: build queries with the RUNTIME api
 //! (`sqlx::query(...)` / `sqlx::query_as(...)`), never the compile-time-checked
 //! `query!` macros — so the crate compiles with no live database. Bind every
 //! value with `.bind(..)`; never string-format user input into SQL.

@@ -1,7 +1,7 @@
 //! The `PageFetcher` seam: pull a page's title + excerpt.
 //!
-//! Step 5 lives here. `PageFetcher` is the dependency-inversion seam (like
-//! Fragments' `Dispatcher`): tests use `FakeFetcher` (offline, canned) while
+//! Step 5 lives here. `PageFetcher` is the dependency-inversion seam:
+//! tests use `FakeFetcher` (offline, canned) while
 //! production uses `ReqwestFetcher` (real HTTP). The pure `extract_meta` helper
 //! is unit-tested against static HTML — no network.
 

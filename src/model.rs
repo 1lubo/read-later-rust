@@ -1,6 +1,6 @@
 //! Domain model — the read-later "bookmark".
 //!
-//! Step 1 lives here. As in Fragments, a Java `enum` *with a getter* becomes a
+//! Step 1 lives here. A Java `enum` *with a getter* becomes a
 //! fieldless Rust enum whose per-variant data lives in a `match`, and a POJO /
 //! `record` becomes a `struct` with `pub` fields.
 

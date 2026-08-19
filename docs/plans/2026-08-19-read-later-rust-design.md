@@ -1,11 +1,11 @@
 # read-later-rust — design
 
-A test-driven Rust course, milestone-staged like `fragments-api-rust`, that builds a
+A test-driven, milestone-staged Rust course that builds a
 **personal read-later / bookmark service** you deploy to Fly.io and actually use.
 
 ## Goal
 
-Learn the Rust you *didn't* hit in Fragments — outbound HTTP, HTML parsing, server-side
+Learn outbound HTTP, HTML parsing, server-side
 templating, self-written auth middleware, SQLite + FTS5 — by building one real service.
 Same loop: read the failing test → implement the `todo!()` stub → `cargo test` → green →
 delete the next `#[ignore]` line → repeat. Java/Spring breadcrumbs above every stub.
@@ -31,7 +31,7 @@ tag / mark-read / delete, via a JSON API and a thin server-rendered web UI.
 
 ## Architecture
 
-Two trait seams carry dependency inversion (as in Fragments' `Dispatcher`/`FragmentStore`):
+Two trait seams carry dependency inversion:
 
 - `AsyncBookmarkStore` — `InMemoryBookmarkStore` (tests) vs `SqliteBookmarkStore`; a
   `StoreHandle` enum dispatches (avoids `dyn` with async-fn-in-trait).
@@ -100,7 +100,7 @@ deterministically with `FakeFetcher`.
 10. wire `main` + `Config::from_env`; `cargo run`
 
 Optional later milestones: async already baked in; **bonus** = add a Postgres backend behind
-the same `AsyncBookmarkStore` seam (feature-gated), mirroring Fragments' Milestone B.
+the same `AsyncBookmarkStore` seam (feature-gated).
 
 ## Deploy (final milestone)
 

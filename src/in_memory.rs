@@ -1,7 +1,7 @@
 //! In-memory `AsyncBookmarkStore` — the test backend.
 //!
 //! Step 2 lives here. Pure data-structure work over a `HashMap` behind an
-//! `Arc<Mutex<..>>` (the shared, cloneable handle you met in Fragments' Step 4).
+//! `Arc<Mutex<..>>` (a shared, cloneable handle).
 //! Get comfortable with ownership, `Option`, and iterator filters — no SQL yet.
 
 use std::collections::HashMap;

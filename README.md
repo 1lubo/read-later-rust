@@ -1,16 +1,15 @@
 # read-later-rust
 
-A test-driven Rust course for Java/Spring developers — the follow-on to
-`fragments-api-rust`. You build a **personal read-later / bookmark service** you
-can deploy to Fly.io and actually use, and along the way you meet the Rust that
-Fragments didn't cover: outbound HTTP, HTML parsing, server-side templating,
+A test-driven Rust course for Java/Spring developers. You build a **personal
+read-later / bookmark service** you can deploy to Fly.io and actually use, and
+along the way you meet outbound HTTP, HTML parsing, server-side templating,
 self-written auth middleware, and SQLite + full-text search.
 
 The design lives in [`docs/plans/2026-08-19-read-later-rust-design.md`](docs/plans/2026-08-19-read-later-rust-design.md).
 
 ## The loop
 
-Same rhythm as Fragments — one red test at a time:
+The rhythm — one red test at a time:
 
 1. Run the active step's tests and read the failure.
 2. Implement the `todo!()` stub(s) it points at (each carries a Java/Spring breadcrumb).
@@ -37,7 +36,7 @@ server-rendered web UI.
 
 ## Steps
 
-| # | Focus | File(s) | What's new vs. Fragments |
+| # | Focus | File(s) | What's new |
 |---|-------|---------|--------------------------|
 | 1 | Domain model | `src/model.rs` | (warm-up: enum `as_str`, constructor) |
 | 2 | In-memory store | `src/in_memory.rs` | async `AsyncBookmarkStore` trait |
@@ -89,6 +88,6 @@ fly deploy
 
 ## Bonus
 
-The async store seam is already in place, so a natural stretch goal — mirroring
-Fragments' Milestone B — is a **Postgres backend** behind the same
-`AsyncBookmarkStore` trait, feature-gated alongside SQLite.
+The async store seam is already in place, so a natural stretch goal is a
+**Postgres backend** behind the same `AsyncBookmarkStore` trait,
+feature-gated alongside SQLite.
