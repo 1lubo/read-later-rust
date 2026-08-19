@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>read-later — login</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 24rem; margin: 4rem auto; padding: 0 1rem; }
+    form { display: flex; flex-direction: column; gap: .75rem; }
+    .error { color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>read-later</h1>
+
+  {% match error %}
+    {% when Some with (msg) %}<p class="error">{{ msg }}</p>
+    {% when None %}{% endmatch %}
+
+  <!-- POST /login sets the signed session cookie on success. -->
+  <form method="post" action="/login">
+    <input type="password" name="token" placeholder="access token" required autofocus>
+    <button type="submit">Log in</button>
+  </form>
+</body>
+</html>

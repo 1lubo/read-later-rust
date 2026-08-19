@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>read-later</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; }
+    form.add { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+    form.add input[type=url] { flex: 1; }
+    ul { list-style: none; padding: 0; }
+    li { border: 1px solid #ddd; border-radius: .5rem; padding: .75rem 1rem; margin-bottom: .75rem; }
+    .meta { color: #666; font-size: .85rem; }
+    .status-pending { color: #b8860b; }
+    .status-ready { color: #2e7d32; }
+    .status-failed { color: #c62828; }
+    .tags { color: #3f51b5; font-size: .8rem; }
+    .actions { display: inline-flex; gap: .5rem; }
+    .actions button { font-size: .8rem; }
+  </style>
+</head>
+<body>
+  <h1>read-later</h1>
+
+  <!-- Add form: POST / (Post/Redirect/Get). Java/Spring: a Thymeleaf th:action form. -->
+  <form class="add" method="post" action="/">
+    <input type="url" name="url" placeholder="https://example.com/article" required>
+    <input type="text" name="tags" placeholder="tags, comma, separated">
+    <button type="submit">Save</button>
+  </form>
+
+  <!-- Search box: GET / preserves the current query. -->
+  <form method="get" action="/">
+    <input type="search" name="q" value="{{ q }}" placeholder="search title + excerpt">
+    <button type="submit">Search</button>
+  </form>
+
+  <ul>
+    {% for b in bookmarks %}
+    <li>
+      <div>
+        <a href="{{ b.url }}">
+          {% match b.title %}
+            {% when Some with (t) %}{{ t }}
+            {% when None %}{{ b.url }}
+          {% endmatch %}
+        </a>
+        <span class="status-{{ b.status.as_str() }}">[{{ b.status.as_str() }}]</span>
+      </div>
+
+      {% match b.excerpt %}
+        {% when Some with (e) %}<div class="meta">{{ e }}</div>
+        {% when None %}{% endmatch %}
+
+      {% if b.tags.len() > 0 %}
+      <div class="tags">
+        {% for tag in b.tags %}#{{ tag }} {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="actions">
+        {% if b.read %}<span class="meta">read</span>{% else %}
+        <form method="post" action="/{{ b.id }}/read"><button type="submit">Mark read</button></form>
+        {% endif %}
+        <form method="post" action="/{{ b.id }}/delete"><button type="submit">Delete</button></form>
+      </div>
+    </li>
+    {% else %}
+    <li class="meta">No bookmarks yet — save one above.</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

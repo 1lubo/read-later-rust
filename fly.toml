@@ -1,0 +1,35 @@
+# Fly.io deployment (final milestone). Fill in `app` after `fly launch --no-deploy`.
+#
+# Java/Spring analogy: this is your deployment descriptor — the platform-side
+# equivalent of container/orchestrator config. Secrets are NOT stored here; set
+# them with `fly secrets set BOOKMARK_TOKEN=... COOKIE_KEY=...`.
+
+app = "readlater-CHANGE-ME"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DATABASE_URL = "sqlite:/data/bookmarks.db?mode=rwc"
+  BIND_ADDR = "0.0.0.0:8080"
+
+# Persistent volume for the SQLite file. Create once:
+#   fly volumes create data --size 1 --region lhr
+[[mounts]]
+  source = "data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "get"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
