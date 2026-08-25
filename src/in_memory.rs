@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use crate::error::AppError;
-use crate::model::BookmarkStatus;
 use crate::model::Bookmark;
+use crate::model::BookmarkStatus;
 use crate::store::{AsyncBookmarkStore, ListQuery};
 
 /// A `Clone`able handle over shared state. Cloning shares the same map.
@@ -37,13 +37,18 @@ impl InMemoryBookmarkStore {
 impl AsyncBookmarkStore for InMemoryBookmarkStore {
     /// Java: `map.put(b.getId(), b)`.
     async fn insert(&self, bookmark: Bookmark) -> Result<(), AppError> {
-        let _ = &self.inner;
-        todo!("step 2: lock the map (self.guard()?) and insert bookmark keyed by id")
+        let id: String = bookmark.id.clone();
+        let bookmark_clone = bookmark.clone();
+        self.guard()?.insert(id, bookmark_clone);
+        Ok(())
     }
 
     /// Java: `Optional.ofNullable(map.get(id))`.
     async fn get(&self, id: &str) -> Result<Option<Bookmark>, AppError> {
-        todo!("step 2: return a clone of the bookmark with this id, if present")
+        match self.guard()?.get(id) {
+            Some(bookmark) => Ok(Some(bookmark.clone())),
+            None => Ok(None),
+        }
     }
 
     /// Newest first (`created_at` desc). Apply the `read`, `tag`, and `q`
@@ -52,14 +57,26 @@ impl AsyncBookmarkStore for InMemoryBookmarkStore {
     ///
     /// Java: `map.values().stream().filter(...).sorted(...).toList()`.
     async fn list(&self, query: &ListQuery) -> Result<Vec<Bookmark>, AppError> {
-        let _ = query;
-        todo!("step 2: collect, filter by read/tag/q, sort by created_at desc")
+        let map = self.guard()?;
+        let mut out : Vec<Bookmark> = map
+            .values()
+            .filter(|b| query.read.map_or(true, |want| b.read == want))
+            .filter(|b| query.tag.as_ref().map_or(true, |t| b.tags.contains(t)))
+            .filter(|b| query.q.as_ref().map_or(true, |needle| {
+                let needle = needle.to_lowercase();
+                b.title.as_deref().unwrap_or("").to_lowercase().contains(&needle)
+                || b.excerpt.as_deref().unwrap_or("").to_lowercase().contains(&needle)
+            }))
+            .cloned()
+            .collect();
+        out.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+        Ok(out)
     }
 
     /// Return `false` if the id was absent. Java: `if (!map.containsKey(id)) ...`.
     async fn set_read(&self, id: &str, read: bool) -> Result<bool, AppError> {
-        let _ = (id, read);
-        todo!("step 2: set the read flag; return whether the id existed")
+        let mut map = self.guard()?;
+        Ok(map.get_mut(id).map(|b| b.read = read).is_some())
     }
 
     /// Enrichment success: set title/excerpt and status = Ready, clear error.
@@ -69,19 +86,29 @@ impl AsyncBookmarkStore for InMemoryBookmarkStore {
         title: Option<String>,
         excerpt: Option<String>,
     ) -> Result<(), AppError> {
-        let _ = (id, title, excerpt, BookmarkStatus::Ready);
-        todo!("step 2: update the entry's title/excerpt, set status = Ready, error = None")
+        let mut map = self.guard()?;
+        if let Some(b) = map.get_mut(id){
+            b.title = title;
+            b.excerpt = excerpt;
+            b.status = BookmarkStatus::Ready;
+            b.error = None;
+        }
+        Ok(())
     }
 
     /// Enrichment failure: set status = Failed and record the error string.
     async fn mark_failed(&self, id: &str, error: String) -> Result<(), AppError> {
-        let _ = (id, error);
-        todo!("step 2: set the entry's status = Failed and error = Some(error)")
+        let mut map = self.guard()?;
+        if let Some(b) = map.get_mut(id){
+            b.status = BookmarkStatus::Failed;
+            b.error = Some(error);
+        }
+        Ok(())
     }
 
     /// Return `false` if the id was absent.
     async fn delete(&self, id: &str) -> Result<bool, AppError> {
-        let _ = id;
-        todo!("step 2: remove the id; return whether it existed")
+        let mut map = self.guard()?;
+        Ok(map.remove(id).is_some())
     }
 }

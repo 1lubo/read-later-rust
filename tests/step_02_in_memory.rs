@@ -20,7 +20,6 @@ fn bm(id: &str, url: &str, tags: &[&str], created_at: i64) -> Bookmark {
 }
 
 #[tokio::test]
-#[ignore = "step 2: implement InMemoryBookmarkStore insert/get"]
 async fn insert_then_get_returns_the_bookmark() {
     let store = InMemoryBookmarkStore::new();
     store.insert(bm("a", "https://a.test", &[], 1)).await.unwrap();
@@ -31,7 +30,6 @@ async fn insert_then_get_returns_the_bookmark() {
 }
 
 #[tokio::test]
-#[ignore = "step 2: implement list() ordering + read/tag filters"]
 async fn list_is_newest_first_and_filters_compose() {
     let store = InMemoryBookmarkStore::new();
     store.insert(bm("old", "https://old.test", &["rust"], 1)).await.unwrap();
@@ -52,7 +50,6 @@ async fn list_is_newest_first_and_filters_compose() {
 }
 
 #[tokio::test]
-#[ignore = "step 2: implement set_read + delete return flags"]
 async fn set_read_and_delete_report_existence() {
     let store = InMemoryBookmarkStore::new();
     store.insert(bm("a", "https://a.test", &[], 1)).await.unwrap();
@@ -66,7 +63,6 @@ async fn set_read_and_delete_report_existence() {
 }
 
 #[tokio::test]
-#[ignore = "step 2: implement mark_ready / mark_failed status transitions"]
 async fn mark_ready_and_failed_transition_status() {
     let store = InMemoryBookmarkStore::new();
     store.insert(bm("a", "https://a.test", &[], 1)).await.unwrap();
