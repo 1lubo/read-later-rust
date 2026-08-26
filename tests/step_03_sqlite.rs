@@ -31,7 +31,6 @@ fn bm(id: &str, url: &str, tags: &[&str], created_at: i64) -> Bookmark {
 }
 
 #[tokio::test]
-#[ignore = "step 3: implement connect/migrate + insert/get with tag join"]
 async fn insert_get_roundtrips_with_tags() {
     let (store, _tmp) = fresh_store().await;
     store.insert(bm("a", "https://a.test", &["rust", "web"], 1)).await.unwrap();
@@ -46,7 +45,6 @@ async fn insert_get_roundtrips_with_tags() {
 }
 
 #[tokio::test]
-#[ignore = "step 3: implement list ordering + read/tag filters in SQL"]
 async fn list_orders_and_filters() {
     let (store, _tmp) = fresh_store().await;
     store.insert(bm("old", "https://old.test", &["rust"], 1)).await.unwrap();
@@ -61,7 +59,6 @@ async fn list_orders_and_filters() {
 }
 
 #[tokio::test]
-#[ignore = "step 3: implement set_read / mark_ready / mark_failed / delete in SQL"]
 async fn mutations_persist_and_report_existence() {
     let (store, _tmp) = fresh_store().await;
     store.insert(bm("a", "https://a.test", &[], 1)).await.unwrap();

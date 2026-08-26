@@ -5,6 +5,7 @@
 //! `record` becomes a `struct` with `pub` fields.
 
 use serde::{Deserialize, Serialize};
+use crate::error::AppError;
 
 /// Lifecycle of a saved bookmark.
 ///
@@ -36,7 +37,19 @@ impl BookmarkStatus {
             BookmarkStatus::Failed => {"failed"}
         }
     }
+
 }
+impl TryFrom<String> for BookmarkStatus {
+        type Error = AppError;
+        fn try_from(s: String) -> Result<Self, AppError> {
+            match s.as_str() {
+                "pending" => Ok(BookmarkStatus::Pending),
+                "ready" => Ok(BookmarkStatus::Ready),
+                "failed" => Ok(BookmarkStatus::Failed),
+                other=> Err(AppError::Storage(format!("Unknown bookmark status: {}", other)))
+            }
+        }
+    }
 
 /// A saved bookmark.
 ///
