@@ -4,8 +4,8 @@
 //! fieldless Rust enum whose per-variant data lives in a `match`, and a POJO /
 //! `record` becomes a `struct` with `pub` fields.
 
-use serde::{Deserialize, Serialize};
 use crate::error::AppError;
+use serde::{Deserialize, Serialize};
 
 /// Lifecycle of a saved bookmark.
 ///
@@ -32,24 +32,26 @@ impl BookmarkStatus {
     /// variant returning a `&'static str` (`"pending" | "ready" | "failed"`).
     pub fn as_str(&self) -> &'static str {
         match self {
-            BookmarkStatus::Pending => {"pending"}
-            BookmarkStatus::Ready => {"ready"}
-            BookmarkStatus::Failed => {"failed"}
+            BookmarkStatus::Pending => "pending",
+            BookmarkStatus::Ready => "ready",
+            BookmarkStatus::Failed => "failed",
         }
     }
-
 }
 impl TryFrom<String> for BookmarkStatus {
-        type Error = AppError;
-        fn try_from(s: String) -> Result<Self, AppError> {
-            match s.as_str() {
-                "pending" => Ok(BookmarkStatus::Pending),
-                "ready" => Ok(BookmarkStatus::Ready),
-                "failed" => Ok(BookmarkStatus::Failed),
-                other=> Err(AppError::Storage(format!("Unknown bookmark status: {}", other)))
-            }
+    type Error = AppError;
+    fn try_from(s: String) -> Result<Self, AppError> {
+        match s.as_str() {
+            "pending" => Ok(BookmarkStatus::Pending),
+            "ready" => Ok(BookmarkStatus::Ready),
+            "failed" => Ok(BookmarkStatus::Failed),
+            other => Err(AppError::Storage(format!(
+                "Unknown bookmark status: {}",
+                other
+            ))),
         }
     }
+}
 
 /// A saved bookmark.
 ///
@@ -88,7 +90,7 @@ impl Bookmark {
             error: None,
             read: false,
             tags,
-            created_at
+            created_at,
         }
     }
 }

@@ -11,7 +11,7 @@ mod common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use common::{body_string, send, test_app, TOKEN};
+use common::{TOKEN, body_string, send, test_app};
 
 /// Log in and return the raw `set-cookie` header value (the signed session).
 async fn login(app: &common::TestApp) -> String {

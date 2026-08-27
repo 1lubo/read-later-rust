@@ -60,7 +60,11 @@ fn render<T: Template>(tpl: T) -> Response {
         Ok(body) => Html(body).into_response(),
         Err(e) => {
             tracing::error!(error = %e, "template render failed");
-            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "render error").into_response()
+            (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                "render error",
+            )
+                .into_response()
         }
     }
 }

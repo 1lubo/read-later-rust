@@ -28,6 +28,8 @@ impl Config {
     /// - `std::env::var("BOOKMARK_TOKEN")` (REQUIRED -> `Err` if missing)
     /// - `std::env::var("COOKIE_KEY")` (REQUIRED; `.into_bytes()`)
     pub fn from_env() -> Result<Self, String> {
-        todo!("step 10: read DATABASE_URL/BIND_ADDR/BOOKMARK_TOKEN/COOKIE_KEY with defaults + required checks")
+        todo!(
+            "step 10: read DATABASE_URL/BIND_ADDR/BOOKMARK_TOKEN/COOKIE_KEY with defaults + required checks"
+        )
     }
 }

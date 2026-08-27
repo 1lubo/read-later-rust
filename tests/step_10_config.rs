@@ -37,7 +37,10 @@ fn defaults_apply_when_only_secrets_are_set() {
     clear();
     unsafe {
         std::env::set_var("BOOKMARK_TOKEN", "tok");
-        std::env::set_var("COOKIE_KEY", "0123456789012345678901234567890123456789012345678901234567890123");
+        std::env::set_var(
+            "COOKIE_KEY",
+            "0123456789012345678901234567890123456789012345678901234567890123",
+        );
     }
 
     let cfg = Config::from_env().expect("config ok");
@@ -56,7 +59,10 @@ fn explicit_values_override_defaults() {
     clear();
     unsafe {
         std::env::set_var("BOOKMARK_TOKEN", "tok");
-        std::env::set_var("COOKIE_KEY", "0123456789012345678901234567890123456789012345678901234567890123");
+        std::env::set_var(
+            "COOKIE_KEY",
+            "0123456789012345678901234567890123456789012345678901234567890123",
+        );
         std::env::set_var("DATABASE_URL", "sqlite::memory:");
         std::env::set_var("BIND_ADDR", "127.0.0.1:9999");
     }

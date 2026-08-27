@@ -58,15 +58,25 @@ impl AsyncBookmarkStore for InMemoryBookmarkStore {
     /// Java: `map.values().stream().filter(...).sorted(...).toList()`.
     async fn list(&self, query: &ListQuery) -> Result<Vec<Bookmark>, AppError> {
         let map = self.guard()?;
-        let mut out : Vec<Bookmark> = map
+        let mut out: Vec<Bookmark> = map
             .values()
             .filter(|b| query.read.map_or(true, |want| b.read == want))
             .filter(|b| query.tag.as_ref().map_or(true, |t| b.tags.contains(t)))
-            .filter(|b| query.q.as_ref().map_or(true, |needle| {
-                let needle = needle.to_lowercase();
-                b.title.as_deref().unwrap_or("").to_lowercase().contains(&needle)
-                || b.excerpt.as_deref().unwrap_or("").to_lowercase().contains(&needle)
-            }))
+            .filter(|b| {
+                query.q.as_ref().map_or(true, |needle| {
+                    let needle = needle.to_lowercase();
+                    b.title
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&needle)
+                        || b.excerpt
+                            .as_deref()
+                            .unwrap_or("")
+                            .to_lowercase()
+                            .contains(&needle)
+                })
+            })
             .cloned()
             .collect();
         out.sort_by(|a, b| b.created_at.cmp(&a.created_at));
@@ -87,7 +97,7 @@ impl AsyncBookmarkStore for InMemoryBookmarkStore {
         excerpt: Option<String>,
     ) -> Result<(), AppError> {
         let mut map = self.guard()?;
-        if let Some(b) = map.get_mut(id){
+        if let Some(b) = map.get_mut(id) {
             b.title = title;
             b.excerpt = excerpt;
             b.status = BookmarkStatus::Ready;
@@ -99,7 +109,7 @@ impl AsyncBookmarkStore for InMemoryBookmarkStore {
     /// Enrichment failure: set status = Failed and record the error string.
     async fn mark_failed(&self, id: &str, error: String) -> Result<(), AppError> {
         let mut map = self.guard()?;
-        if let Some(b) = map.get_mut(id){
+        if let Some(b) = map.get_mut(id) {
             b.status = BookmarkStatus::Failed;
             b.error = Some(error);
         }

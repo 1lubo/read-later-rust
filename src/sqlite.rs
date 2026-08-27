@@ -12,8 +12,8 @@
 use crate::error::AppError;
 use crate::model::{Bookmark, BookmarkStatus};
 use crate::store::{AsyncBookmarkStore, ListQuery};
-use sqlx::sqlite::SqlitePool;
 use sqlx::QueryBuilder;
+use sqlx::sqlite::SqlitePool;
 
 /// A pooled SQLite backend. `SqlitePool` is cheap to `Clone` (shared pool).
 ///
@@ -35,8 +35,15 @@ struct BookmarkRow {
 impl BookmarkRow {
     fn into_bookmark(self, tags: Vec<String>) -> Bookmark {
         Bookmark {
-            id: self.id, url: self.url, title: self.title, excerpt: self.excerpt, status: self.status,
-            error: self.error, read: self.read, tags, created_at: self.created_at
+            id: self.id,
+            url: self.url,
+            title: self.title,
+            excerpt: self.excerpt,
+            status: self.status,
+            error: self.error,
+            read: self.read,
+            tags,
+            created_at: self.created_at,
         }
     }
 }
@@ -74,11 +81,11 @@ impl SqliteBookmarkStore {
     async fn load_tags(&self, id: &str) -> Result<Vec<String>, AppError> {
         Ok(sqlx::query_scalar(
             "SELECT t.name FROM tags t JOIN bookmark_tags bt ON bt.tag_id = t.id
-             WHERE bt.bookmark_id = ?")
-            .bind(id)
-            .fetch_all(&self.pool)
-            .await?
+             WHERE bt.bookmark_id = ?",
         )
+        .bind(id)
+        .fetch_all(&self.pool)
+        .await?)
     }
 }
 
@@ -89,18 +96,20 @@ impl AsyncBookmarkStore for SqliteBookmarkStore {
     async fn insert(&self, bookmark: Bookmark) -> Result<(), AppError> {
         let mut conn = self.pool.begin().await?;
 
-        sqlx::query("INSERT INTO bookmarks(id, url, title, excerpt, status, error, read, created_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)", )
-            .bind(&bookmark.id)
-            .bind(&bookmark.url)
-            .bind(&bookmark.title)
-            .bind(&bookmark.excerpt)
-            .bind(&bookmark.status.as_str())
-            .bind(&bookmark.error)
-            .bind(&bookmark.read)
-            .bind(&bookmark.created_at)
-            .execute(&mut *conn)
-            .await?;
+        sqlx::query(
+            "INSERT INTO bookmarks(id, url, title, excerpt, status, error, read, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(&bookmark.id)
+        .bind(&bookmark.url)
+        .bind(&bookmark.title)
+        .bind(&bookmark.excerpt)
+        .bind(&bookmark.status.as_str())
+        .bind(&bookmark.error)
+        .bind(&bookmark.read)
+        .bind(&bookmark.created_at)
+        .execute(&mut *conn)
+        .await?;
 
         for tag in &bookmark.tags {
             sqlx::query("INSERT OR IGNORE INTO tags(name) VALUES(?)")
@@ -166,14 +175,20 @@ impl AsyncBookmarkStore for SqliteBookmarkStore {
         }
 
         if let Some(tag) = &query.tag {
-            qb.push(" AND b.id IN (SELECT bt.bookmark_id FROM bookmark_tags bt
-            JOIN tags t ON t.id = bt.tag_id WHERE t.name = ")
-                .push_bind(tag).push(")");
+            qb.push(
+                " AND b.id IN (SELECT bt.bookmark_id FROM bookmark_tags bt
+            JOIN tags t ON t.id = bt.tag_id WHERE t.name = ",
+            )
+            .push_bind(tag)
+            .push(")");
         }
 
         qb.push(" ORDER BY b.created_at DESC");
 
-        let rows = qb.build_query_as::<BookmarkRow>().fetch_all(&self.pool).await?;
+        let rows = qb
+            .build_query_as::<BookmarkRow>()
+            .fetch_all(&self.pool)
+            .await?;
 
         let mut out = Vec::with_capacity(rows.len());
         for row in rows {
@@ -201,15 +216,16 @@ impl AsyncBookmarkStore for SqliteBookmarkStore {
         excerpt: Option<String>,
     ) -> Result<(), AppError> {
         let mut conn = self.pool.begin().await?;
-        sqlx::query("UPDATE bookmarks SET title = ?, excerpt = ?, status = ?, error = ? WHERE id = ?")
-            .bind(title.as_deref())
-            .bind(excerpt.as_deref())
-            .bind(BookmarkStatus::Ready.as_str())
-            .bind(None::<String>)
-            .bind(id)
-            .execute(&mut *conn)
-            .await?;
-
+        sqlx::query(
+            "UPDATE bookmarks SET title = ?, excerpt = ?, status = ?, error = ? WHERE id = ?",
+        )
+        .bind(title.as_deref())
+        .bind(excerpt.as_deref())
+        .bind(BookmarkStatus::Ready.as_str())
+        .bind(None::<String>)
+        .bind(id)
+        .execute(&mut *conn)
+        .await?;
 
         sqlx::query("UPDATE bookmarks_fts SET title = ?, excerpt = ? WHERE bid = ?")
             .bind(title.as_deref())
@@ -243,7 +259,6 @@ impl AsyncBookmarkStore for SqliteBookmarkStore {
             .await?;
 
         let existed = result.rows_affected() > 0;
-
 
         sqlx::query("DELETE FROM bookmarks_fts WHERE bid = ?")
             .bind(id)

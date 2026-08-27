@@ -8,7 +8,7 @@ mod common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use common::{bearer, body_string, send, test_app, TOKEN};
+use common::{TOKEN, bearer, body_string, send, test_app};
 use readlater::model::BookmarkStatus;
 use readlater::store::AsyncBookmarkStore;
 
@@ -50,7 +50,9 @@ async fn create_stores_pending_and_enqueues() {
     let req = Request::post("/bookmarks")
         .header("authorization", bearer())
         .header("content-type", "application/json")
-        .body(Body::from(r#"{"url":"https://example.com","tags":["rust"]}"#))
+        .body(Body::from(
+            r#"{"url":"https://example.com","tags":["rust"]}"#,
+        ))
         .unwrap();
     let resp = send(app.router.clone(), req).await;
     assert_eq!(resp.status(), StatusCode::CREATED);
@@ -69,8 +71,14 @@ async fn create_stores_pending_and_enqueues() {
 #[ignore = "step 8: GET /bookmarks lists, ?read=&tag= filters compose"]
 async fn list_applies_filters() {
     let app = test_app();
-    app.store.insert(mk("a", "https://a.test", &["rust"])).await.unwrap();
-    app.store.insert(mk("b", "https://b.test", &["java"])).await.unwrap();
+    app.store
+        .insert(mk("a", "https://a.test", &["rust"]))
+        .await
+        .unwrap();
+    app.store
+        .insert(mk("b", "https://b.test", &["java"]))
+        .await
+        .unwrap();
 
     let req = Request::get("/bookmarks?tag=rust")
         .header("authorization", bearer())
@@ -87,27 +95,39 @@ async fn list_applies_filters() {
 #[ignore = "step 8: PATCH sets read, DELETE removes, unknown id -> 404"]
 async fn patch_and_delete() {
     let app = test_app();
-    app.store.insert(mk("a", "https://a.test", &[])).await.unwrap();
+    app.store
+        .insert(mk("a", "https://a.test", &[]))
+        .await
+        .unwrap();
 
     let patch = Request::patch("/bookmarks/a")
         .header("authorization", bearer())
         .header("content-type", "application/json")
         .body(Body::from(r#"{"read":true}"#))
         .unwrap();
-    assert_eq!(send(app.router.clone(), patch).await.status(), StatusCode::OK);
+    assert_eq!(
+        send(app.router.clone(), patch).await.status(),
+        StatusCode::OK
+    );
     assert!(app.store.get("a").await.unwrap().unwrap().read);
 
     let del = Request::delete("/bookmarks/a")
         .header("authorization", bearer())
         .body(Body::empty())
         .unwrap();
-    assert_eq!(send(app.router.clone(), del).await.status(), StatusCode::NO_CONTENT);
+    assert_eq!(
+        send(app.router.clone(), del).await.status(),
+        StatusCode::NO_CONTENT
+    );
 
     let missing = Request::delete("/bookmarks/a")
         .header("authorization", bearer())
         .body(Body::empty())
         .unwrap();
-    assert_eq!(send(app.router.clone(), missing).await.status(), StatusCode::NOT_FOUND);
+    assert_eq!(
+        send(app.router.clone(), missing).await.status(),
+        StatusCode::NOT_FOUND
+    );
 }
 
 fn mk(id: &str, url: &str, tags: &[&str]) -> readlater::model::Bookmark {

@@ -126,7 +126,9 @@ pub fn api_router() -> Router<AppState> {
         .route("/bookmarks", post(create_bookmark).get(list_bookmarks))
         .route(
             "/bookmarks/{id}",
-            get(get_bookmark).patch(update_bookmark).delete(delete_bookmark),
+            get(get_bookmark)
+                .patch(update_bookmark)
+                .delete(delete_bookmark),
         )
 }
 

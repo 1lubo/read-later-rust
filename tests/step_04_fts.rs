@@ -7,8 +7,8 @@
 //! store keeps a separate FTS index in sync and `?q=` queries it.
 
 use readlater::model::Bookmark;
-use readlater::store::{AsyncBookmarkStore, ListQuery};
 use readlater::sqlite::SqliteBookmarkStore;
+use readlater::store::{AsyncBookmarkStore, ListQuery};
 
 async fn fresh_store() -> (SqliteBookmarkStore, tempfile::TempDir) {
     let tmp = tempfile::tempdir().expect("tempdir");
@@ -29,19 +29,30 @@ async fn search_matches_title_and_excerpt() {
 
     store.insert(bm("rust", "https://rust.test")).await.unwrap();
     store
-        .mark_ready("rust", Some("Learning Rust".into()), Some("ownership and borrowing".into()))
+        .mark_ready(
+            "rust",
+            Some("Learning Rust".into()),
+            Some("ownership and borrowing".into()),
+        )
         .await
         .unwrap();
 
     store.insert(bm("java", "https://java.test")).await.unwrap();
     store
-        .mark_ready("java", Some("Spring Boot".into()), Some("dependency injection".into()))
+        .mark_ready(
+            "java",
+            Some("Spring Boot".into()),
+            Some("dependency injection".into()),
+        )
         .await
         .unwrap();
 
     // Match on title.
     let hits = store
-        .list(&ListQuery { q: Some("rust".into()), ..Default::default() })
+        .list(&ListQuery {
+            q: Some("rust".into()),
+            ..Default::default()
+        })
         .await
         .unwrap();
     assert_eq!(hits.len(), 1);
@@ -49,7 +60,10 @@ async fn search_matches_title_and_excerpt() {
 
     // Match on excerpt.
     let hits = store
-        .list(&ListQuery { q: Some("injection".into()), ..Default::default() })
+        .list(&ListQuery {
+            q: Some("injection".into()),
+            ..Default::default()
+        })
         .await
         .unwrap();
     assert_eq!(hits.len(), 1);
@@ -57,7 +71,10 @@ async fn search_matches_title_and_excerpt() {
 
     // No match.
     let none = store
-        .list(&ListQuery { q: Some("kubernetes".into()), ..Default::default() })
+        .list(&ListQuery {
+            q: Some("kubernetes".into()),
+            ..Default::default()
+        })
         .await
         .unwrap();
     assert!(none.is_empty());
@@ -67,17 +84,32 @@ async fn search_matches_title_and_excerpt() {
 async fn delete_removes_from_search_index() {
     let (store, _tmp) = fresh_store().await;
     store.insert(bm("rust", "https://rust.test")).await.unwrap();
-    store.mark_ready("rust", Some("Learning Rust".into()), None).await.unwrap();
+    store
+        .mark_ready("rust", Some("Learning Rust".into()), None)
+        .await
+        .unwrap();
 
     assert_eq!(
-        store.list(&ListQuery { q: Some("rust".into()), ..Default::default() }).await.unwrap().len(),
+        store
+            .list(&ListQuery {
+                q: Some("rust".into()),
+                ..Default::default()
+            })
+            .await
+            .unwrap()
+            .len(),
         1
     );
 
     store.delete("rust").await.unwrap();
-    assert!(store
-        .list(&ListQuery { q: Some("rust".into()), ..Default::default() })
-        .await
-        .unwrap()
-        .is_empty());
+    assert!(
+        store
+            .list(&ListQuery {
+                q: Some("rust".into()),
+                ..Default::default()
+            })
+            .await
+            .unwrap()
+            .is_empty()
+    );
 }

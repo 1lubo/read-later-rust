@@ -5,7 +5,9 @@
 //! production uses `ReqwestFetcher` (real HTTP). The pure `extract_meta` helper
 //! is unit-tested against static HTML — no network.
 
+use scraper::{Html, Selector};
 use std::collections::{HashMap, HashSet};
+use std::str;
 
 /// What we manage to pull out of a page.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -42,7 +44,35 @@ pub trait PageFetcher {
 /// `<meta property="og:description">`, then the first non-empty `<p>`.
 /// Use `scraper::{Html, Selector}`. Return `None` for anything missing.
 pub fn extract_meta(html: &str) -> PageMeta {
-    todo!("step 5: extract <title> + description/og:description/first <p> via scraper")
+    let document_html = Html::parse_document(html);
+
+    let title_selector = Selector::parse("title").unwrap();
+    let meta_description_selector = Selector::parse("meta[name=\"description\"]").unwrap();
+    let meta_property_selector = Selector::parse("meta[property=\"og:description\"]").unwrap();
+    let paragraph_selector = Selector::parse("p").unwrap();
+
+
+    let paragraph_elements = document_html.select(&paragraph_selector);
+    let first_non_empty_paragraph = paragraph_elements
+        .map(|e| e.text().collect::<String>())
+        .find(|t| !t.trim().is_empty());
+
+    let title = document_html
+        .select(&title_selector)
+        .next()
+        .map(|te| te.text().collect::<String>());
+    let meta_content = |sel: &Selector| {
+        document_html
+            .select(sel)
+            .next()
+            .and_then(|el| el.value().attr("content"))
+            .map(str::to_string)
+    };
+    let excerpt = meta_content(&meta_description_selector)
+        .or_else(||meta_content(&meta_property_selector))
+        .or(first_non_empty_paragraph);
+
+    PageMeta { title, excerpt }
 }
 
 /// Real network fetcher. (Constructor provided; `fetch` is your step 5 work.)
@@ -74,7 +104,12 @@ impl PageFetcher for ReqwestFetcher {
     /// Java/Spring: `RestClient.get().uri(url).retrieve()...` then parse.
     async fn fetch(&self, url: &str) -> Result<PageMeta, FetchError> {
         let _ = &self.client; // step 5: use self.client.get(url).send().await ...
-        todo!("step 5: fetch url, check status, read text, return extract_meta(&body)")
+        let response = self.client.get(url).send().await;
+        let response_status = response.as_ref().unwrap().status();
+        match response_status.is_success() {
+            true => Ok(extract_meta(&*response.unwrap().text().await.unwrap())),
+            false => Err(FetchError::Status(response_status.as_u16())),
+        }
     }
 }
 
