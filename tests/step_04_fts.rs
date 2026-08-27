@@ -24,7 +24,6 @@ fn bm(id: &str, url: &str) -> Bookmark {
 }
 
 #[tokio::test]
-#[ignore = "step 4: keep bookmarks_fts in sync and query it for ?q="]
 async fn search_matches_title_and_excerpt() {
     let (store, _tmp) = fresh_store().await;
 
@@ -65,7 +64,6 @@ async fn search_matches_title_and_excerpt() {
 }
 
 #[tokio::test]
-#[ignore = "step 4: deleting a bookmark must also drop its FTS row"]
 async fn delete_removes_from_search_index() {
     let (store, _tmp) = fresh_store().await;
     store.insert(bm("rust", "https://rust.test")).await.unwrap();

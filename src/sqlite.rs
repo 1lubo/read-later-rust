@@ -155,8 +155,8 @@ impl AsyncBookmarkStore for SqliteBookmarkStore {
         let mut qb = QueryBuilder::new("SELECT b.* FROM bookmarks b");
 
         if let Some(query) = &query.q {
-            qb.push(" JOIN bookmarks_fts f ON f.bid = b.id");
-            qb.push(" WHERE f MATCH ").push_bind(query);
+            qb.push(" JOIN bookmarks_fts ON bookmarks_fts.bid = b.id");
+            qb.push(" WHERE bookmarks_fts MATCH ").push_bind(query);
         } else {
             qb.push(" WHERE 1 = 1");
         }
