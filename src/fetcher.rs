@@ -45,7 +45,6 @@ pub trait PageFetcher {
 /// Use `scraper::{Html, Selector}`. Return `None` for anything missing.
 pub fn extract_meta(html: &str) -> PageMeta {
     let document_html = Html::parse_document(html);
-
     let title_selector = Selector::parse("title").unwrap();
     let meta_description_selector = Selector::parse("meta[name=\"description\"]").unwrap();
     let meta_property_selector = Selector::parse("meta[property=\"og:description\"]").unwrap();

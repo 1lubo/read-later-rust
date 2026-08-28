@@ -18,7 +18,6 @@ fn bm(id: &str, url: &str) -> Bookmark {
 }
 
 #[tokio::test]
-#[ignore = "step 6: process() fetches then marks the bookmark Ready"]
 async fn process_marks_ready_on_success() {
     let store = InMemoryBookmarkStore::new();
     store.insert(bm("a", "https://a.test")).await.unwrap();
@@ -35,7 +34,6 @@ async fn process_marks_ready_on_success() {
 }
 
 #[tokio::test]
-#[ignore = "step 6: a fetch error marks the bookmark Failed"]
 async fn process_marks_failed_on_fetch_error() {
     let store = InMemoryBookmarkStore::new();
     store.insert(bm("a", "https://a.test")).await.unwrap();
@@ -51,7 +49,6 @@ async fn process_marks_failed_on_fetch_error() {
 }
 
 #[tokio::test]
-#[ignore = "step 6: processing an unknown id is a no-op, not an error"]
 async fn process_unknown_id_is_ok() {
     let store = InMemoryBookmarkStore::new();
     let fetcher = FakeFetcher::new();

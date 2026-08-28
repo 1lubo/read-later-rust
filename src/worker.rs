@@ -38,8 +38,14 @@ where
     ///
     /// Java/Spring: the body of the `@Async` "process one message" method.
     pub async fn process(&self, id: &str) -> Result<(), AppError> {
-        let _ = (&self.store, &self.fetcher, id);
-        todo!("step 6: get -> fetch -> mark_ready on success / mark_failed on error")
+        let Some(bookmark) = self.store.get(id).await? else {
+            return Ok(());
+        };
+
+        match self.fetcher.fetch(&bookmark.url).await {
+            Ok(meta) => self.store.mark_ready(id, meta.title, meta.excerpt).await,
+            Err(e) => self.store.mark_failed(id, e.to_string()).await,
+        }
     }
 
     /// The consumer loop. (Provided plumbing — spawned as a Tokio task in
