@@ -11,6 +11,8 @@
 use axum::extract::{FromRef, FromRequestParts};
 use axum::http::request::Parts;
 use axum_extra::extract::cookie::Key;
+use axum_extra::extract::SignedCookieJar;
+use subtle::ConstantTimeEq;
 
 use crate::error::AppError;
 use crate::state::AppState;
@@ -44,8 +46,10 @@ impl AuthConfig {
     /// slices and fold the resulting `Choice` into a `bool` — but ONLY when the
     /// lengths match first, since the compare needs equal-length inputs.
     pub fn token_matches(&self, candidate: &str) -> bool {
-        let _ = (&self.token, candidate);
-        todo!("step 7: constant-time compare candidate against self.token (subtle::ConstantTimeEq)")
+        if !self.token.len().eq(&candidate.len()) {
+            return false;
+        }
+        self.token.as_str().as_bytes().ct_eq(&candidate.as_bytes()).unwrap_u8().eq(&1)
     }
 }
 
@@ -78,7 +82,23 @@ impl FromRequestParts<AppState> for AuthToken {
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let _ = (parts, state);
-        todo!("step 7: accept a matching Bearer header OR signed session cookie; else Unauthorized")
+        if let Some(value) = parts.headers.get("Authorization") {
+            if let Ok(s) = value.to_str() {
+                if let Some(token) = s.strip_prefix("Bearer ") {
+                    if state.auth.token_matches(token) {
+                        return Ok(Self);
+                    }
+                }
+            }
+        }
+
+        let jar = SignedCookieJar::from_headers(&parts.headers, state.auth.key().clone());
+        if let Some(cookie) = jar.get("session") {
+            if state.auth.token_matches(cookie.value()) {
+                return Ok(Self);
+            }
+        }
+
+        Err(AppError::Unauthorized)
     }
 }

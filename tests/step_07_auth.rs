@@ -14,14 +14,12 @@ use readlater::auth::AuthConfig;
 const COOKIE_KEY: &[u8] = &[7u8; 64];
 
 #[test]
-#[ignore = "step 7: token_matches accepts the exact token"]
 fn accepts_the_configured_token() {
     let auth = AuthConfig::new("s3cr3t-token".to_string(), COOKIE_KEY);
     assert!(auth.token_matches("s3cr3t-token"));
 }
 
 #[test]
-#[ignore = "step 7: token_matches rejects a wrong token"]
 fn rejects_a_wrong_token() {
     let auth = AuthConfig::new("s3cr3t-token".to_string(), COOKIE_KEY);
     assert!(!auth.token_matches("wrong"));
